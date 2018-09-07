@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.esempla</groupId>
+    <groupId>com.github.barogi</groupId>
     <artifactId>spring-boot-starter-embedded-postgres</artifactId>
     <version>0.2</version>
 
