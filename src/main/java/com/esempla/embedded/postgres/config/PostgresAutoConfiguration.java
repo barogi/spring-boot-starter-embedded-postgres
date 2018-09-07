@@ -16,7 +16,7 @@ import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 import java.io.IOException;
 
 @Configuration
-@ConditionalOnProperty(prefix = "embedded.postgres", name = "database-name")
+@ConditionalOnProperty(prefix = "embedded.postgres", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(PostgresProperties.class)
 public class PostgresAutoConfiguration {
 
@@ -37,13 +37,15 @@ public class PostgresAutoConfiguration {
     @Bean(destroyMethod = "stop")
     @ConditionalOnMissingBean
     public EmbeddedPostgres embeddedPostgres() throws IOException {
-        EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(properties.getVersion());
+        EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(
+                properties.getVersion());
 
-        embeddedPostgres.start(properties.getHost(), properties.getPort(), properties.getDatabaseName(),
-                properties.getUsername(), properties.getPassword());
-
+        embeddedPostgres.start(properties.getHost(), properties.getPort(),
+                               properties.getDatabase(),
+                               properties.getUsername(),
+                               properties.getPassword(),
+                               properties.getArguments());
 
         return embeddedPostgres;
     }
-
 }
