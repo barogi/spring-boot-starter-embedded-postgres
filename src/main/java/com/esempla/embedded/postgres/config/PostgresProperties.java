@@ -23,7 +23,9 @@ public class PostgresProperties {
     private String username = "postgres";
     private String password = "postgres";
     private String database = "postgres";
-    private Resource tempPath;    
+    private Resource tempPath;
+    private Resource dataPath;
+    private Long warmupMs;
     private int port = 5432;
     private Version.Main version = Version.Main.V9_6;    
     private List<String> arguments = Collections.EMPTY_LIST;

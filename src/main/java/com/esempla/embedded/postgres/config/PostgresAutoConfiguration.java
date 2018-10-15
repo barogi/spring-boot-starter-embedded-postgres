@@ -15,13 +15,11 @@ import org.springframework.context.annotation.Configuration;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.springframework.core.io.Resource;
 
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "embedded.postgres", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(PostgresProperties.class)
@@ -43,15 +41,16 @@ public class PostgresAutoConfiguration {
 
     @Bean(destroyMethod = "stop")
     @ConditionalOnMissingBean
-    public EmbeddedPostgres embeddedPostgres() throws IOException {
+    public EmbeddedPostgres embeddedPostgres() 
+            throws IOException, InterruptedException {        
         
         IRuntimeConfig conf = (properties.getTempPath() != null) 
-                ? EmbeddedPostgres.cachedRuntimeConfig( Paths.get(properties.getTempPath().getURI()) )
+                ? EmbeddedPostgres.cachedRuntimeConfig( properties.getTempPath().getFile().toPath() )
                 : EmbeddedPostgres.defaultRuntimeConfig();
         
-        EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(
-                properties.getVersion());
-        
+        EmbeddedPostgres embeddedPostgres = properties.getDataPath() == null 
+                ? new EmbeddedPostgres(properties.getVersion())
+                : new EmbeddedPostgres(properties.getVersion(), properties.getDataPath().getFile().getAbsolutePath());
 
         embeddedPostgres.start(conf,
                 properties.getHost(), properties.getPort(),
@@ -59,6 +58,12 @@ public class PostgresAutoConfiguration {
                 properties.getUsername(),
                 properties.getPassword(),
                 properties.getArguments());
+        
+        if (properties.getWarmupMs() != null) {
+            Thread.sleep(properties.getWarmupMs());
+        }
+        
+        log.info("Embedded pg started {}", embeddedPostgres.getConnectionUrl().get());
 
         return embeddedPostgres;
     }
